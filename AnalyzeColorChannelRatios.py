@@ -1,5 +1,5 @@
 from PIL import Image;
-import numpy as np;
+import matplotlib.pyplot as plt;
 
 # It looks like for every photo I took, the background is shown at 100 pixels
 # from the edge. That is, for a 960 x 540 image, the pixels at (100, 100),
@@ -100,16 +100,35 @@ for imageFilePath in filePathsOfImageSamples:
 		appleRedBlueRatios.append(redBlueRatio);
 		appleGreenBlueRatios.append(greenBlueRatio);
 
-print(" -- Background Red/Green Ratios -- ");
-print(str(backgroundRedGreenRatios));
-print(" -- Background Red/Blue Ratios -- ");
-print(str(backgroundRedBlueRatios));
-print(" -- Background Green/Blue Ratios -- ");
-print(str(backgroundGreenBlueRatios));
-
-print(" -- Apple Red/Green Ratios -- ");
-print(str(appleRedGreenRatios));
-print(" -- Apple Red/Blue Ratios -- ");
-print(str(appleRedBlueRatios));
-print(" -- Apple Green/Blue Ratios -- ");
-print(str(appleGreenBlueRatios));
+plt.subplot(321);
+plt.hist(backgroundRedGreenRatios, bins=[0, 1, 2, 3, 4, 5]);
+plt.xlabel("Red / Green Ratio");
+plt.ylabel("Pixel Counts");
+plt.title("Background Red / Green Pixel Ratios");
+plt.subplot(322);
+plt.hist(appleRedGreenRatios, bins=[0, 1, 2, 3, 4, 5]);
+plt.xlabel("Red / Green Ratio");
+plt.ylabel("Pixel Counts");
+plt.title("Apple Red / Green Pixel Ratios");
+plt.subplot(323);
+plt.hist(backgroundRedBlueRatios, bins=[0, 1, 2, 3, 4, 5]);
+plt.xlabel("Red / Blue Ratio");
+plt.ylabel("Pixel Counts");
+plt.title("Background Red / Blue Pixel Ratios");
+plt.subplot(324);
+plt.hist(appleRedBlueRatios, bins=[0, 1, 2, 3, 4, 5]);
+plt.xlabel("Red / Blue Ratio");
+plt.ylabel("Pixel Counts");
+plt.title("Apple Red / Blue Pixel Ratios");
+plt.subplot(325);
+plt.hist(backgroundGreenBlueRatios, bins=[0, 1, 2, 3, 4, 5]);
+plt.xlabel("Green / Blue Ratio");
+plt.ylabel("Pixel Counts");
+plt.title("Background Green / Blue Pixel Ratios");
+plt.subplot(326);
+plt.hist(appleGreenBlueRatios, bins=[0, 1, 2, 3, 4, 5]);
+plt.xlabel("Green / Blue Ratio");
+plt.ylabel("Pixel Counts");
+plt.title("Apple Green / Blue Pixel Ratios");
+plt.tight_layout(pad=0.5);
+plt.show();
