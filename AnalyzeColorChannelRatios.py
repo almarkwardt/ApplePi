@@ -1,5 +1,6 @@
 from PIL import Image;
 import matplotlib.pyplot as plt;
+import ColorChannelRatios;
 
 # It looks like for every photo I took, the background is shown at 100 pixels
 # from the edge. That is, for a 960 x 540 image, the pixels at (100, 100),
@@ -81,9 +82,9 @@ for imageFilePath in filePathsOfImageSamples:
 	for backgroundPixelLocation in backgroundPixelLocations:
 		pixelValue = sampleImage.getpixel(backgroundPixelLocation);
 
-		redGreenRatio = pixelValue[0] / max(pixelValue[1], 1);
-		redBlueRatio = pixelValue[0] / max(pixelValue[2], 1);
-		greenBlueRatio = pixelValue[1] / max(pixelValue[2], 1);
+		redGreenRatio = ColorChannelRatios.GetRedGreenRatio(pixelValue);
+		redBlueRatio = ColorChannelRatios.GetRedBlueRatio(pixelValue);
+		greenBlueRatio = ColorChannelRatios.GetGreenBlueRatio(pixelValue);
 
 		backgroundRedGreenRatios.append(redGreenRatio);
 		backgroundRedBlueRatios.append(redBlueRatio);
@@ -92,16 +93,16 @@ for imageFilePath in filePathsOfImageSamples:
 	for applePixelLocation in applePixelLocations:
 		pixelValue = sampleImage.getpixel(applePixelLocation);
 
-		redGreenRatio = pixelValue[0] / max(pixelValue[1], 1);
-		redBlueRatio = pixelValue[0] / max(pixelValue[2], 1);
-		greenBlueRatio = pixelValue[1] / max(pixelValue[2], 1);
+		redGreenRatio = ColorChannelRatios.GetRedGreenRatio(pixelValue);
+		redBlueRatio = ColorChannelRatios.GetRedBlueRatio(pixelValue);
+		greenBlueRatio = ColorChannelRatios.GetGreenBlueRatio(pixelValue);
 
 		appleRedGreenRatios.append(redGreenRatio);
 		appleRedBlueRatios.append(redBlueRatio);
 		appleGreenBlueRatios.append(greenBlueRatio);
 
 plt.subplot(321);
-plt.hist(backgroundRedGreenRatios, bins=[0, 1, 2, 3, 4, 5]);
+plt.hist(backgroundRedGreenRatios, bins=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]);
 plt.xlabel("Red / Green Ratio");
 plt.ylabel("Pixel Counts");
 plt.title("Background Red / Green Pixel Ratios");
@@ -111,7 +112,7 @@ plt.xlabel("Red / Green Ratio");
 plt.ylabel("Pixel Counts");
 plt.title("Apple Red / Green Pixel Ratios");
 plt.subplot(323);
-plt.hist(backgroundRedBlueRatios, bins=[0, 1, 2, 3, 4, 5]);
+plt.hist(backgroundRedBlueRatios, bins=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]);
 plt.xlabel("Red / Blue Ratio");
 plt.ylabel("Pixel Counts");
 plt.title("Background Red / Blue Pixel Ratios");
@@ -121,7 +122,7 @@ plt.xlabel("Red / Blue Ratio");
 plt.ylabel("Pixel Counts");
 plt.title("Apple Red / Blue Pixel Ratios");
 plt.subplot(325);
-plt.hist(backgroundGreenBlueRatios, bins=[0, 1, 2, 3, 4, 5]);
+plt.hist(backgroundGreenBlueRatios, bins=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]);
 plt.xlabel("Green / Blue Ratio");
 plt.ylabel("Pixel Counts");
 plt.title("Background Green / Blue Pixel Ratios");
