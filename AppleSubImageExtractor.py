@@ -12,14 +12,14 @@ def FindBlobs(image, activePixelClassifier):
 	# considered "active" by the categorizer. In other words,
 	# all pixels that would be considered part of a blob, even
 	# if it is only a single-pixel blob.
-	activePixels = [];
+	activePixels = set();
 
 	for pixelY in range(image.height):
 		for pixelX in range(image.width):
 			pixelValue = image.getpixel((pixelX, pixelY));
 
 			if activePixelClassifier(pixelValue):
-				activePixels.append((pixelX, pixelY));
+				activePixels.add((pixelX, pixelY));
 			else:
 				# Keep checking, this pixel isn't active though
 				pass;
@@ -36,14 +36,14 @@ def FindBlobs(image, activePixelClassifier):
 		# active pixels list so we won't keep re-discovering the same pixels
 		# over and over.
 		print("Active pixel list now at " + str(len(activePixels)) + " items.");
-		pixelsInThisBlob = [];
-		pixelsInThisBlob.append(activePixels[0]);
-		activePixels.remove(activePixels[0]);
+		pixelsToVisitInThisBlob = set();
+		visitedPixelsInThisBlob = set();
+		firstActivePixel = next(iter(activePixels));
+		pixelsToVisitInThisBlob.add(firstActivePixel);
+		activePixels.discard(firstActivePixel);
 
-		currentlyConsideredPixelIndex = 0;
-		while(currentlyConsideredPixelIndex < len(pixelsInThisBlob)):
-			currentlyConsideredPixel = pixelsInThisBlob[currentlyConsideredPixelIndex];
-			#print("Considering area adjoining pixel " + str(currentlyConsideredPixel));
+		while(len(pixelsToVisitInThisBlob)):
+			currentlyConsideredPixel = pixelsToVisitInThisBlob.pop();
 
 			# We consider the eight pixels surrounding this one.
 			adjoiningPixels = [
@@ -59,54 +59,60 @@ def FindBlobs(image, activePixelClassifier):
 			# But we also need to do bounds-checking. We'll filter out any
 			# pixels that have locations outside the bounds of the image.
 			adjoiningPixels = [pixel for pixel in adjoiningPixels if (pixel[0] >= 0 and pixel[1] >= 0 and pixel[0] < image.width and pixel[1] < image.height)];
-			#print("Found " + str(len(adjoiningPixels)) + " real adjoining pixels.");
 
 			for adjoiningPixel in adjoiningPixels:
-				if adjoiningPixel in activePixels and adjoiningPixel not in pixelsInThisBlob:
+				if (adjoiningPixel in activePixels and adjoiningPixel not in pixelsToVisitInThisBlob
+				    and adjoiningPixel not in visitedPixelsInThisBlob):
 					# This is an active adjoining pixel and we have not already
 					# discovered it previously, so it gets added to the blob.
-					activePixels.remove(adjoiningPixel);
-					pixelsInThisBlob.append(adjoiningPixel);
-					#print("Pixels in this blob grows to " + str(len(pixelsInThisBlob)));
+					activePixels.discard(adjoiningPixel);
+					pixelsToVisitInThisBlob.add(adjoiningPixel);
 				else:
 					# This is either not an active pixel or it is but we've already
 					# counted it as part of the blob, so we don't count it again.
 					pass;
 
 			# Ok move on to the next pixel we need to consider
-			currentlyConsideredPixelIndex += 1;
+			visitedPixelsInThisBlob.add(currentlyConsideredPixel);
 
 		# We've found a blob, now we need to find the extents so we can
 		# return it.
-		leftBound = pixelsInThisBlob[0][0];
-		rightBound = leftBound;
-		topBound = pixelsInThisBlob[0][1];
-		bottomBound = topBound;
+		leftBound = None;
+		rightBound = None;
+		topBound = None;
+		bottomBound = None;
 
-		for pixel in pixelsInThisBlob[1:]:
-			if pixel[0] < leftBound:
-				leftBound = pixel[0];
+		for blobPixel in visitedPixelsInThisBlob:
+			if (leftBound is None and rightBound is None
+			    and topBound is None and bottomBound is None):
+				leftBound = blobPixel[0];
+				rightBound = leftBound;
+				topBound = blobPixel[1];
+				bottomBound = topBound;
 			else:
-				# Keep the old value.
-				pass;
+				if blobPixel[0] < leftBound:
+					leftBound = blobPixel[0];
+				else:
+					# Keep the old value.
+					pass;
 
-			if pixel[0] > rightBound:
-				rightBound = pixel[0];
-			else:
-				# Keep the old value.
-				pass;
+				if blobPixel[0] > rightBound:
+					rightBound = blobPixel[0];
+				else:
+					# Keep the old value.
+					pass;
 
-			if pixel[1] < topBound:
-				topBound = pixel[1];
-			else:
-				# Keep the old value.
-				pass;
+				if blobPixel[1] < topBound:
+					topBound = blobPixel[1];
+				else:
+					# Keep the old value.
+					pass;
 
-			if pixel[1] > bottomBound:
-				bottomBound = pixel[1];
-			else:
-				# Keep the old value.
-				pass;
+				if blobPixel[1] > bottomBound:
+					bottomBound = blobPixel[1];
+				else:
+					# Keep the old value.
+					pass;
 
 		# And now we've found the extents of the blob, so add it to the
 		# blob list.
