@@ -35,7 +35,6 @@ def FindBlobs(image, activePixelClassifier):
 		# growing blob we'll add it to "this" blob and remove it from the
 		# active pixels list so we won't keep re-discovering the same pixels
 		# over and over.
-		print("Active pixel list now at " + str(len(activePixels)) + " items.");
 		pixelsToVisitInThisBlob = set();
 		visitedPixelsInThisBlob = set();
 		firstActivePixel = next(iter(activePixels));
@@ -120,30 +119,8 @@ def FindBlobs(image, activePixelClassifier):
 
 	return discoveredBlobs;
 
-
-
-
-filePathsOfOriginalImages = glob.glob("./Images/**/*.jpeg");
-
-# Go through each image we found and extract out the subregion that seems to
-# belong to the apple. We'll save these images in a folder called AppleSubImages
-# in each apple category folder (one in "GrannySmith", one in "Kanzi", etc.)
-for originalFilePath in filePathsOfOriginalImages:
-	originalFilePath = originalFilePath.replace("\\", "/");
-	originalFileName = originalFilePath[originalFilePath.rfind("/") + 1:];
-	containingFolderPath = originalFilePath[0:originalFilePath.rfind("/")] + "/";
-	appleSubImageFolderPath = containingFolderPath + "AppleSubImages/";
-
-	try:
-		os.makedirs(appleSubImageFolderPath);
-	except OSError as err:
-		if err.errno != errno.EEXIST:
-			raise;
-		else:
-			# Ok, the folder already exists, that's not a problem for us.
-			pass;
-
-	originalImage = Image.open(originalFilePath);
+def ExtractAppleSubImage(originalImage):
+	appleSubImage = None;
 
 	# To reduce noise in the image that can throw off our bounds-finding, we
 	# will apply a large-radius gaussian blur to the image. This should make
@@ -153,11 +130,9 @@ for originalFilePath in filePathsOfOriginalImages:
 
 	# We'll find all contiguous apple-ish pixel blobs in the image and take
 	# the largest one to be the apple itself.
-	print("Finding blobs in " + originalFilePath);
 	discoveredBlobs = FindBlobs(blurredImage, AppleOrBackgroundCategorizer.IsPixelAnApple);
 
 	if len(discoveredBlobs) > 0:
-		print("Found " + str(len(discoveredBlobs)) + " blobs in " + originalFilePath);
 		largestBlob = discoveredBlobs[0];
 		largestBlobArea = ((largestBlob[1] - largestBlob[0]) + 1) * ((largestBlob[3] - largestBlob[2]) + 1);
 
@@ -167,13 +142,46 @@ for originalFilePath in filePathsOfOriginalImages:
 			if blobArea > largestBlobArea:
 				largestBlob = blob;
 				largestBlobArea = blobArea;
-				print("Found new largest blob of area " + str(largestBlobArea));
 			else:
 				# This blob is smaller than one we found previously so forget it.
-				print("Blob of area " + str(blobArea) + " smaller than " + str(largestBlobArea));
+				pass;
 
-		print("Extracting area ({0},{1})-({2},{3}) of image {4}".format(largestBlob[0], largestBlob[2], largestBlob[1], largestBlob[3], originalFilePath));
 		appleSubImage = originalImage.crop((largestBlob[0], largestBlob[2], largestBlob[1], largestBlob[3]));
-		appleSubImage.save(appleSubImageFolderPath + originalFileName);
 	else:
-		print("Did not find an apple in image " + originalFilePath);
+		# No apple found... we'll return None.
+		pass;
+
+	return appleSubImage;
+
+def main():
+	filePathsOfOriginalImages = glob.glob("./Images/**/*.jpeg");
+
+	# Go through each image we found and extract out the subregion that seems to
+	# belong to the apple. We'll save these images in a folder called AppleSubImages
+	# in each apple category folder (one in "GrannySmith", one in "Kanzi", etc.)
+	for originalFilePath in filePathsOfOriginalImages:
+		originalFilePath = originalFilePath.replace("\\", "/");
+		originalFileName = originalFilePath[originalFilePath.rfind("/") + 1:];
+		containingFolderPath = originalFilePath[0:originalFilePath.rfind("/")] + "/";
+		appleSubImageFolderPath = containingFolderPath + "AppleSubImages/";
+
+		try:
+			os.makedirs(appleSubImageFolderPath);
+		except OSError as err:
+			if err.errno != errno.EEXIST:
+				raise;
+			else:
+				# Ok, the folder already exists, that's not a problem for us.
+				pass;
+
+		originalImage = Image.open(originalFilePath);
+		appleSubImage = ExtractAppleSubImage(originalImage);
+
+		if appleSubImage is not None:
+			appleSubImage.save(appleSubImageFolderPath + originalFileName);
+		else:
+			# No apple in that photo.
+			pass;
+
+if __name__ == "__main__":
+	main();
